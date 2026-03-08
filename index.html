@@ -201,10 +201,15 @@ body::before { content:''; position:fixed; inset:0; background-image:url("data:i
       </div>
       <div class="controls-bar" id="host-controls" style="display:none">
         <div class="url-input-wrap">
-          <input type="text" id="video-url-input" placeholder="Dán URL YouTube hoặc link video .mp4...">
-          <button class="btn-sm" onclick="loadVideo()">▶ Tải video</button>
+          <input type="text" id="video-url-input" placeholder="Dán URL trang phim, YouTube, hoặc link .mp4/.m3u8...">
+          <button class="btn-sm" id="btn-load" onclick="loadVideo()">▶ Tải video</button>
         </div>
         <button class="btn-icon accent" id="btn-play-pause" onclick="togglePlayPause()">▶</button>
+      </div>
+      <!-- Extract status bar -->
+      <div id="extract-bar" style="display:none;background:var(--surface);border-top:1px solid var(--border);padding:6px 16px;font-size:12px;color:var(--muted);display:none;align-items:center;gap:8px;">
+        <div class="sync-spinner" style="width:14px;height:14px;border-width:2px;flex-shrink:0"></div>
+        <span id="extract-status">Đang tìm link video...</span>
       </div>
       <div class="controls-bar" id="guest-controls" style="display:none">
         <span class="guest-notice">👀 Đang xem — video đồng bộ tự động theo host</span>
@@ -433,16 +438,112 @@ function floatEmoji(emoji) {
 // ── VIDEO HOST ──
 function detectType(url) {
   if (/youtu\.be\/|youtube\.com\/watch|youtube\.com\/embed/.test(url)) return 'youtube';
-  if (/\.(mp4|webm|ogg|mov)(\?|$)/i.test(url)) return 'html5';
+  if (/\.(m3u8|mp4|webm|ogg|mov)(\?|$|&)/i.test(url)) return 'html5';
   return null;
 }
 function ytId(url) { const m=url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/); return m?m[1]:null; }
 
-function loadVideo() {
+// ── AUTO EXTRACT ──
+const PROXIES = [
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+];
+
+// Regex patterns to find video links in page HTML
+function extractFromHtml(html) {
+  const patterns = [
+    // Direct m3u8
+    /["'`](https?:\/\/[^"'`\s]+\.m3u8[^"'`\s]*?)["'`]/gi,
+    // Direct mp4
+    /["'`](https?:\/\/[^"'`\s]+\.mp4[^"'`\s]*?)["'`]/gi,
+    // JWPlayer / VideoJS file config
+    /(?:file|src|source)['":\s]+["'](https?:\/\/[^"']+(?:m3u8|mp4)[^"']*?)["']/gi,
+    // sources array
+    /sources?\s*:\s*\[?\s*\{[^}]*?(?:file|src)\s*:\s*["'](https?:\/\/[^"']+)["']/gi,
+    // playerConfig / hlsUrl / videoUrl
+    /(?:hlsUrl|videoUrl|streamUrl|playUrl|video_url|stream_url|file_url)['":\s=]+"?(https?:\/\/[^"'\s&]+)"?/gi,
+    // data-src or data-url
+    /data-(?:src|url|file|stream)=["'](https?:\/\/[^"']+(?:m3u8|mp4)[^"']*?)["']/gi,
+  ];
+
+  const found = [];
+  for (const pat of patterns) {
+    let m;
+    while ((m = pat.exec(html)) !== null) {
+      const u = m[1];
+      if (u && u.length > 10 && !u.includes('googleapis') && !u.includes('facebook')) {
+        found.push(u);
+      }
+    }
+  }
+  // Prefer m3u8
+  const m3u8 = found.find(u => u.includes('.m3u8'));
+  if (m3u8) return m3u8;
+  const mp4  = found.find(u => u.includes('.mp4'));
+  if (mp4)  return mp4;
+  return found[0] || null;
+}
+
+function setExtractBar(show, msg) {
+  const bar = document.getElementById('extract-bar');
+  const txt = document.getElementById('extract-status');
+  bar.style.display = show ? 'flex' : 'none';
+  if (msg) txt.textContent = msg;
+}
+
+async function tryExtract(pageUrl) {
+  for (let i = 0; i < PROXIES.length; i++) {
+    const proxyUrl = PROXIES[i](pageUrl);
+    setExtractBar(true, `Đang thử proxy ${i+1}/${PROXIES.length}...`);
+    try {
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) continue;
+      let html = await res.text();
+      // allorigins wraps in JSON
+      if (proxyUrl.includes('allorigins')) {
+        try { html = JSON.parse(html).contents; } catch(e) {}
+      }
+      const link = extractFromHtml(html);
+      if (link) return link;
+    } catch(e) { continue; }
+  }
+  return null;
+}
+
+async function loadVideo() {
   const url = document.getElementById('video-url-input').value.trim();
   if (!url) return;
-  const type = detectType(url);
-  if (!type) { showToast('URL không hợp lệ. Cần YouTube hoặc link .mp4'); return; }
+
+  const directType = detectType(url);
+  if (directType) {
+    // Direct link — load immediately
+    _applyVideo(url, directType);
+    return;
+  }
+
+  // Try auto-extract
+  document.getElementById('btn-load').disabled = true;
+  document.getElementById('btn-load').textContent = '⏳';
+  setExtractBar(true, '🔍 Đang phân tích trang phim...');
+
+  const found = await tryExtract(url);
+
+  setExtractBar(false);
+  document.getElementById('btn-load').disabled = false;
+  document.getElementById('btn-load').textContent = '▶ Tải video';
+
+  if (found) {
+    document.getElementById('video-url-input').value = found;
+    appendSysMsg(`✅ Tìm thấy link video tự động!`);
+    _applyVideo(found, 'html5');
+  } else {
+    setExtractBar(true, '❌ Không tìm được link tự động. Thử dán link .m3u8 hoặc .mp4 trực tiếp.');
+    setTimeout(() => setExtractBar(false), 5000);
+  }
+}
+
+function _applyVideo(url, type) {
   S.currentVideo = { url, type };
   setupPlayer(url, type, 0, 'paused');
   broadcastAll({ type:'video', url, vtype:type, state:'paused', time:0 });
