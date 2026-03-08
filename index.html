@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineSync — Xem phim cùng nhau</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090910;
+      --surface: #111118;
+      --panel: #18181f;
+      --border: #252532;
+      --border2: #2e2e3e;
+      --accent: #f0a030;
+      --accent2: #ff5f35;
+      --accentglow: rgba(240,160,48,0.13);
+      --text: #e8e8f2;
+      --text2: #a0a0b8;
+      --muted: #555568;
+      --green: #4ade80;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ===== SETUP MODAL ===== */
+    #setup-modal {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.92);
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+
+    .setup-box {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 2.4rem;
+      max-width: 520px; width: 93%;
+      box-shadow: 0 0 80px rgba(240,160,48,0.07);
+    }
+
+    .setup-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem; letter-spacing: 4px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; line-height: 1; margin-bottom: 0.3rem;
+    }
+
+    .setup-sub {
+      color: var(--muted); font-size: 0.78rem;
+      letter-spacing: 3px; text-transform: uppercase; margin-bottom: 1.8rem;
+    }
+
+    .setup-step {
+      display: flex; gap: 0.75rem; align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--accentglow); border: 1px solid var(--accent);
+      color: var(--accent); font-size: 0.72rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+
+    .step-text { font-size: 0.85rem; color: var(--text2); line-height: 1.55; }
+    .step-text a { color: var(--accent); text-decoration: none; }
+    .step-text code {
+      background: var(--panel); border: 1px solid var(--border2);
+      padding: 0.1rem 0.4rem; border-radius: 4px;
+      font-size: 0.78rem; font-family: monospace;
+    }
+
+    .setup-sep { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+    .lbl {
+      display: block; font-size: 0.72rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.5rem;
+    }
+
+    textarea.cfg-ta {
+      width: 100%; background: var(--bg); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 0.85rem 1rem; color: var(--text);
+      font-family: monospace; font-size: 0.78rem; min-height: 120px;
+      outline: none; resize: vertical; transition: border-color 0.2s;
+      margin-bottom: 1rem; line-height: 1.5;
+    }
+    textarea.cfg-ta:focus { border-color: var(--accent); }
+
+    .btn-pri {
+      width: 100%; padding: 0.95rem;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      border: none; border-radius: 10px;
+      color: #08080e; font-family: 'DM Sans', sans-serif;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-pri:hover { opacity: 0.88; }
+    .btn-pri:active { transform: scale(0.98); }
+
+    .skip-ln {
+      text-align: center; margin-top: 0.75rem;
+      font-size: 0.78rem; color: var(--muted);
+    }
+    .skip-ln span { color: var(--accent); cursor: pointer; }
+    .skip-ln span:hover { text-decoration: underline; }
+
+    #no-fb {
+      display: none;
+      background: rgba(255,95,53,0.1); border: 1px solid rgba(255,95,53,0.3);
+      border-radius: 10px; padding: 0.85rem 1rem;
+      font-size: 0.82rem; color: #ff9070; margin-top: 1rem; text-align: left;
+      line-height: 1.6;
+    }
+
+    /* ===== LANDING ===== */
+    #landing {
+      min-height: 100vh; display: none;
+      align-items: center; justify-content: center;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(80,40,15,0.4) 0%, transparent 70%),
+        var(--bg);
+      position: relative; overflow: hidden;
+    }
+
+    #landing::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.013) 60px, rgba(255,255,255,0.013) 61px),
+        repeating-linear-gradient(0deg,  transparent, transparent 60px, rgba(255,255,255,0.013) 60px, rgba(255,255,255,0.013) 61px);
+      pointer-events: none;
+    }
+
+    .l-inner {
+      position: relative; text-align: center;
+      max-width: 440px; width: 92%; padding: 1.5rem;
+    }
+
+    .hero-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5.2rem; letter-spacing: 6px; line-height: 0.95;
+      background: linear-gradient(135deg, var(--accent) 20%, var(--accent2) 80%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 40px rgba(240,160,48,0.3));
+    }
+
+    .hero-tag {
+      color: var(--muted); font-size: 0.78rem;
+      letter-spacing: 4px; text-transform: uppercase; margin-top: 0.5rem;
+    }
+    .hero-tag span { color: var(--accent); }
+
+    .l-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 18px; padding: 2rem;
+      margin-top: 2.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.025);
+    }
+
+    .ig { margin-bottom: 1rem; }
+    .ig:last-child { margin-bottom: 0; }
+
+    input[type="text"] {
+      width: 100%; background: var(--bg);
+      border: 1px solid var(--border2); border-radius: 10px;
+      padding: 0.8rem 1rem; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+      outline: none; transition: border-color 0.2s;
+    }
+    input[type="text"]::placeholder { color: var(--muted); }
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    .or-div {
+      display: flex; align-items: center; gap: 1rem;
+      color: var(--muted); font-size: 0.78rem;
+      margin: 1.25rem 0;
+    }
+    .or-div::before,.or-div::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .btn-out {
+      width: 100%; padding: 0.85rem;
+      background: transparent; border: 1px solid var(--border2);
+      border-radius: 10px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-out:hover { border-color: var(--accent); background: var(--accentglow); }
+
+    /* ===== ROOM ===== */
+    #room { display: none; height: 100vh; flex-direction: column; }
+
+    .rh {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem; height: 52px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .rh-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.45rem; letter-spacing: 3px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .rh-right { display: flex; align-items: center; gap: 0.75rem; }
+
+    .live-badge {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.78rem; color: var(--text2);
+    }
+    .live-badge::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 6px var(--green);
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .code-pill {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: var(--panel); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 0.35rem 0.75rem;
+      cursor: pointer; transition: border-color 0.2s;
+      font-size: 0.78rem; color: var(--text2);
+    }
+    .code-pill:hover { border-color: var(--accent); }
+    .code-pill strong {
+      color: var(--accent); font-weight: 600;
+      letter-spacing: 3px; font-size: 0.9rem;
+    }
+
+    .host-badge {
+      background: var(--accentglow); border: 1px solid rgba(240,160,48,0.35);
+      color: var(--accent); font-size: 0.68rem; font-weight: 700;
+      padding: 0.2rem 0.55rem; border-radius: 5px;
+      text-transform: uppercase; letter-spacing: 1.5px;
+    }
+
+    .rb { display: flex; flex: 1; overflow: hidden; }
+
+    /* Video */
+    .va { flex: 1; display: flex; flex-direction: column; background: #000; position: relative; min-width: 0; }
+    .vw { flex: 1; position: relative; }
+    #yt-player { width: 100%; height: 100%; }
+
+    .vid-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.75rem; color: var(--muted);
+    }
+    .vid-placeholder .bi { font-size: 3.5rem; opacity: 0.3; }
+    .vid-placeholder p { font-size: 0.88rem; opacity: 0.5; }
+
+    #rxn-canvas {
+      position: absolute; inset: 0;
+      pointer-events: none; overflow: hidden;
+    }
+
+    .fr {
+      position: absolute; bottom: 80px; font-size: 2rem;
+      pointer-events: none;
+      animation: fup 3.2s ease-out forwards;
+    }
+    @keyframes fup {
+      0%   { opacity: 0; transform: translateY(0) scale(0.8); }
+      15%  { opacity: 1; transform: translateY(-20px) scale(1.1); }
+      80%  { opacity: 0.85; transform: translateY(-140px) scale(1); }
+      100% { opacity: 0; transform: translateY(-190px) scale(0.7); }
+    }
+
+    .url-bar {
+      display: flex; gap: 0.6rem; padding: 0.65rem 0.85rem;
+      background: var(--surface); border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .url-bar input { flex: 1; padding: 0.58rem 0.9rem; border-radius: 24px; font-size: 0.84rem; }
+    .url-bar button {
+      padding: 0.58rem 1.1rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; border-radius: 24px;
+      color: #08080e; font-family: 'DM Sans', sans-serif;
+      font-weight: 600; font-size: 0.84rem; cursor: pointer;
+      white-space: nowrap; transition: opacity 0.2s;
+    }
+    .url-bar button:hover { opacity: 0.85; }
+
+    .host-hint {
+      font-size: 0.72rem; color: var(--muted);
+      display: flex; align-items: center; padding: 0 0.85rem 0.45rem;
+      background: var(--surface); gap: 0.3rem;
+    }
+
+    /* Chat */
+    .cs {
+      width: 300px; flex-shrink: 0; display: flex;
+      flex-direction: column; background: var(--surface);
+      border-left: 1px solid var(--border);
+    }
+
+    .cs-hdr {
+      padding: 0.85rem 1.1rem; border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .cs-title {
+      font-size: 0.72rem; color: var(--text2);
+      text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
+    }
+
+    .cs-msgs {
+      flex: 1; overflow-y: auto;
+      padding: 0.85rem; display: flex;
+      flex-direction: column; gap: 0.65rem;
+    }
+    .cs-msgs::-webkit-scrollbar { width: 3px; }
+    .cs-msgs::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .m { display: flex; flex-direction: column; gap: 0.2rem; }
+    .m-who { font-size: 0.72rem; color: var(--accent); font-weight: 600; }
+    .m-txt {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; border-top-left-radius: 3px;
+      padding: 0.5rem 0.75rem; font-size: 0.86rem;
+      line-height: 1.5; word-break: break-word; color: var(--text);
+    }
+    .m.sys .m-txt {
+      background: transparent; border: none;
+      color: var(--muted); font-size: 0.76rem;
+      text-align: center; font-style: italic; padding: 0.15rem 0;
+    }
+    .m.me .m-txt {
+      background: rgba(240,160,48,0.08);
+      border-color: rgba(240,160,48,0.18);
+    }
+
+    .rxn-bar {
+      display: flex; padding: 0.5rem 0.6rem;
+      gap: 0.25rem; border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .rb-btn {
+      flex: 1; background: none; border: none;
+      font-size: 1.2rem; cursor: pointer;
+      padding: 0.35rem 0.2rem; border-radius: 7px;
+      transition: background 0.15s, transform 0.12s; line-height: 1;
+    }
+    .rb-btn:hover { background: var(--panel); transform: scale(1.25); }
+    .rb-btn:active { transform: scale(0.9); }
+
+    .ci {
+      display: flex; align-items: center;
+      gap: 0.5rem; padding: 0.65rem 0.75rem; flex-shrink: 0;
+    }
+    .ci input { flex: 1; padding: 0.58rem 0.9rem; font-size: 0.86rem; border-radius: 24px; }
+
+    .snd-btn {
+      width: 34px; height: 34px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .snd-btn:hover { opacity: 0.85; }
+    .snd-btn:active { transform: scale(0.9); }
+
+    /* Sync / Toast */
+    #sync-banner {
+      position: fixed; top: 62px; left: 50%; transform: translateX(-50%);
+      background: rgba(240,160,48,0.9); color: #08080e;
+      padding: 0.35rem 1.1rem; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 600;
+      pointer-events: none; z-index: 50;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    #sync-banner.on { opacity: 1; }
+
+    #toast {
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--panel); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 0.7rem 1.4rem;
+      font-size: 0.86rem; z-index: 300;
+      opacity: 0; transition: opacity 0.3s, transform 0.3s;
+      white-space: nowrap; pointer-events: none;
+    }
+    #toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 640px) {
+      .cs { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========== SETUP MODAL ========== -->
+<div id="setup-modal">
+  <div class="setup-box">
+    <div class="setup-logo">CineSync</div>
+    <div class="setup-sub">Cấu hình Firebase · Chỉ cần làm 1 lần</div>
+
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        Truy cập <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → Tạo project mới (miễn phí)
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        Vào <strong>Build → Realtime Database</strong> → Create database → Chọn <em>Test mode</em>
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        Vào <strong>Project Settings ⚙️ → Your apps → Web</strong> → Đăng ký app → Copy <code>firebaseConfig</code> và dán vào bên dưới
+      </div>
+    </div>
+
+    <div class="setup-sep"></div>
+
+    <label class="lbl">Dán firebaseConfig JSON vào đây</label>
+    <textarea class="cfg-ta" id="fb-cfg" placeholder='{
+  "apiKey": "AIza...",
+  "authDomain": "your-app.firebaseapp.com",
+  "databaseURL": "https://your-app-default-rtdb.firebaseio.com",
+  "projectId": "your-app",
+  "storageBucket": "your-app.appspot.com",
+  "messagingSenderId": "123456789",
+  "appId": "1:123:web:abc123"
+}'></textarea>
+
+    <button class="btn-pri" onclick="doInit()">🔗 Kết nối Firebase</button>
+
+    <div id="no-fb">
+      ⚠️ Không tìm thấy <strong>databaseURL</strong> trong config.<br>
+      Hãy đảm bảo bạn đã bật <strong>Realtime Database</strong> (không phải Firestore).
+    </div>
+
+    <div class="skip-ln">
+      Chưa có Firebase?&nbsp;<span onclick="demo()">Dùng thử demo (1 mình)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== LANDING ========== -->
+<div id="landing">
+  <div class="l-inner">
+    <div class="hero-logo">CineSync</div>
+    <div class="hero-tag">Xem phim · Cùng nhau · <span>Realtime</span></div>
+
+    <div class="l-card">
+      <div class="ig">
+        <label class="lbl">Tên của bạn</label>
+        <input type="text" id="inp-name" placeholder="Tên hiển thị..." maxlength="20">
+      </div>
+      <div class="ig">
+        <button class="btn-pri" onclick="createRoom()">🎬 Tạo phòng mới</button>
+      </div>
+
+      <div class="or-div">hoặc tham gia phòng có sẵn</div>
+
+      <div class="ig">
+        <label class="lbl">Mã phòng</label>
+        <input type="text" id="inp-code" placeholder="Nhập mã 6 ký tự..."
+          maxlength="6" style="text-transform:uppercase;letter-spacing:4px;text-align:center">
+      </div>
+      <div class="ig">
+        <button class="btn-out" onclick="joinRoom()">🔗 Tham gia phòng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ROOM ========== -->
+<div id="room">
+  <div class="rh">
+    <div class="rh-logo">CineSync</div>
+    <div class="rh-right">
+      <div class="live-badge" id="viewers-txt">1 người xem</div>
+      <div class="code-pill" onclick="copyInvite()" title="Click để copy link mời">
+        Phòng&nbsp;<strong id="room-cd">------</strong>&nbsp;📋
+      </div>
+      <div class="host-badge" id="h-badge" style="display:none">HOST</div>
+    </div>
+  </div>
+
+  <div class="rb">
+    <!-- Video -->
+    <div class="va">
+      <div class="vw">
+        <div id="yt-player"></div>
+        <div id="vid-ph" class="vid-placeholder">
+          <div class="bi">🎬</div>
+          <p>Chưa có video đang phát</p>
+          <p style="font-size:.78rem">Host dán link YouTube để bắt đầu</p>
+        </div>
+        <div id="rxn-canvas"></div>
+      </div>
+
+      <div id="host-hint" class="host-hint" style="display:none">
+        ℹ️ Chỉ host mới có thể điều khiển video. Bạn đang xem ở chế độ khách.
+      </div>
+
+      <div class="url-bar">
+        <input type="text" id="url-inp" placeholder="Dán link YouTube... (vd: https://youtube.com/watch?v=dQw4w9WgXcQ)">
+        <button onclick="loadVideo()">▶ Phát</button>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="cs">
+      <div class="cs-hdr">
+        <span class="cs-title">💬 Chat phòng</span>
+      </div>
+
+      <div class="cs-msgs" id="chat-msgs"></div>
+
+      <div class="rxn-bar">
+        <button class="rb-btn" onclick="sendRxn('😂')">😂</button>
+        <button class="rb-btn" onclick="sendRxn('❤️')">❤️</button>
+        <button class="rb-btn" onclick="sendRxn('😮')">😮</button>
+        <button class="rb-btn" onclick="sendRxn('👏')">👏</button>
+        <button class="rb-btn" onclick="sendRxn('🔥')">🔥</button>
+        <button class="rb-btn" onclick="sendRxn('😭')">😭</button>
+      </div>
+
+      <div class="ci">
+        <input type="text" id="chat-inp" placeholder="Nhắn gì đó..."
+          onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="snd-btn" onclick="sendChat()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="#08080e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="sync-banner">⚡ Đang đồng bộ...</div>
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<!-- YouTube -->
+<script>
+(function(){
+  var s = document.createElement('script');
+  s.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(s);
+})();
+</script>
+
+<script>
+/* ── STATE ── */
+let db = null, isDemo = false;
+let roomCode = '', userName = '', isHost = false;
+let userId = 'u' + Math.random().toString(36).slice(2,10);
+let player = null, playerReady = false;
+let isSyncing = false, syncTmr = null;
+let currentVid = '';
+
+/* ── BOOT ── */
+window.addEventListener('load', () => {
+  const p = new URLSearchParams(location.search);
+  const c = p.get('room');
+  if (c) document.getElementById('inp-code').value = c.toUpperCase();
+
+  const saved = localStorage.getItem('cinesync_cfg');
+  if (saved) {
+    document.getElementById('fb-cfg').value = saved;
+    doInit(true);
+  }
+});
+
+/* ── FIREBASE ── */
+function doInit(silent=false) {
+  document.getElementById('no-fb').style.display = 'none';
+  const raw = document.getElementById('fb-cfg').value.trim();
+  let cfg;
+  try { cfg = JSON.parse(raw); }
+  catch(e) { if(!silent) toast('❌ JSON không hợp lệ!'); return; }
+
+  if (!cfg.databaseURL) {
+    document.getElementById('no-fb').style.display = 'block';
+    return;
+  }
+
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(cfg);
+    db = firebase.database();
+    localStorage.setItem('cinesync_cfg', raw);
+    document.getElementById('setup-modal').style.display = 'none';
+    document.getElementById('landing').style.display = 'flex';
+    if (!silent) toast('✅ Kết nối Firebase thành công!');
+  } catch(e) {
+    if (!silent) toast('❌ ' + e.message);
+  }
+}
+
+function demo() {
+  isDemo = true; db = null;
+  document.getElementById('setup-modal').style.display = 'none';
+  document.getElementById('landing').style.display = 'flex';
+  toast('🎭 Chế độ demo (không đồng bộ)');
+}
+
+/* ── ROOM ── */
+function genCode() {
+  return Math.random().toString(36).slice(2,8).toUpperCase();
+}
+
+function createRoom() {
+  const name = document.getElementById('inp-name').value.trim();
+  if (!name) { toast('Vui lòng nhập tên!'); return; }
+  userName = name; roomCode = genCode(); isHost = true;
+
+  if (db) {
+    db.ref('rooms/'+roomCode).set({
+      host: userId, hostName: userName,
+      created: Date.now(), videoId: '',
+      playing: false, currentTime: 0, updatedAt: Date.now()
+    });
+    db.ref('rooms/'+roomCode+'/viewers/'+userId).set({ name: userName, joined: Date.now() });
+  }
+  enterRoom();
+}
+
+function joinRoom() {
+  const name = document.getElementById('inp-name').value.trim();
+  const code = document.getElementById('inp-code').value.trim().toUpperCase();
+  if (!name) { toast('Vui lòng nhập tên!'); return; }
+  if (code.length !== 6) { toast('Mã phòng phải có 6 ký tự!'); return; }
+  userName = name; roomCode = code; isHost = false;
+
+  if (!db) { isDemo = true; enterRoom(); return; }
+
+  db.ref('rooms/'+roomCode).once('value', snap => {
+    if (!snap.exists()) { toast('❌ Phòng không tồn tại!'); return; }
+    const d = snap.val();
+    isHost = (d.host === userId);
+    db.ref('rooms/'+roomCode+'/viewers/'+userId).set({ name: userName, joined: Date.now() });
+    enterRoom();
+  });
+}
+
+function enterRoom() {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('room').style.display = 'flex';
+  document.getElementById('room-cd').textContent = roomCode;
+  if (isHost) document.getElementById('h-badge').style.display = 'inline';
+  else        document.getElementById('host-hint').style.display = 'flex';
+
+  history.replaceState(null, '', '?room='+roomCode);
+  initPlayer();
+  if (db) { setupListeners(); setupPresence(); }
+  sysMsg('Bạn đã vào phòng ' + roomCode + (isHost ? ' · Bạn là HOST 🎬' : ''));
+}
+
+/* ── PRESENCE ── */
+function setupPresence() {
+  const ref = db.ref('rooms/'+roomCode+'/viewers/'+userId);
+  db.ref('.info/connected').on('value', s => {
+    if (s.val()) {
+      ref.onDisconnect().remove();
+      ref.set({ name: userName, joined: Date.now() });
+    }
+  });
+}
+
+/* ── LISTENERS ── */
+function setupListeners() {
+  const rRef = db.ref('rooms/'+roomCode);
+
+  rRef.child('videoId').on('value', s => {
+    const vid = s.val();
+    if (vid && vid !== currentVid) {
+      currentVid = vid;
+      if (playerReady) ytLoad(vid);
+    }
+  });
+
+  rRef.child('playing').on('value', s => {
+    if (isHost || !playerReady) return;
+    isSyncing = true;
+    s.val() ? player.playVideo() : player.pauseVideo();
+    clearTimeout(syncTmr); syncTmr = setTimeout(() => isSyncing=false, 600);
+  });
+
+  rRef.child('currentTime').on('value', s => {
+    if (isHost || !playerReady) return;
+    const t = s.val()||0;
+    if (Math.abs(t - (player.getCurrentTime()||0)) > 2.5) {
+      isSyncing = true;
+      player.seekTo(t, true);
+      showSync();
+      clearTimeout(syncTmr); syncTmr = setTimeout(() => isSyncing=false, 800);
+    }
+  });
+
+  rRef.child('viewers').on('value', s => {
+    const v = s.val();
+    const n = v ? Object.keys(v).length : 0;
+    document.getElementById('viewers-txt').textContent = n + ' người xem';
+  });
+
+  db.ref('chats/'+roomCode).limitToLast(100).on('child_added', s => {
+    const m = s.val();
+    addMsg(m.sender, m.text, m.system, m.sender===userName);
+  });
+
+  db.ref('rxns/'+roomCode).limitToLast(30).on('child_added', s => {
+    const r = s.val();
+    if (Date.now()-r.ts < 4000) spawnRxn(r.emoji);
+  });
+}
+
+/* ── YOUTUBE ── */
+function onYouTubeIframeAPIReady() {}
+
+function initPlayer() {
+  if (player) return;
+  player = new YT.Player('yt-player', {
+    height:'100%', width:'100%', videoId:'',
+    playerVars: { rel:0, modestbranding:1, enablejsapi:1 },
+    events: { onReady: onPReady, onStateChange: onPState }
+  });
+}
+
+function onPReady() {
+  playerReady = true;
+  if (!db) return;
+  db.ref('rooms/'+roomCode).once('value', s => {
+    const d = s.val();
+    if (!d || !d.videoId) return;
+    currentVid = d.videoId;
+    ytLoad(d.videoId);
+    setTimeout(() => {
+      if (d.currentTime) player.seekTo(d.currentTime, true);
+      d.playing ? player.playVideo() : player.pauseVideo();
+    }, 1500);
+  });
+}
+
+function onPState(e) {
+  if (!isHost || isSyncing || !db) return;
+  const t = player.getCurrentTime();
+  if (e.data === YT.PlayerState.PLAYING)
+    db.ref('rooms/'+roomCode).update({ playing:true,  currentTime:t, updatedAt:Date.now() });
+  else if (e.data === YT.PlayerState.PAUSED)
+    db.ref('rooms/'+roomCode).update({ playing:false, currentTime:t, updatedAt:Date.now() });
+}
+
+setInterval(() => {
+  if (!isHost||!playerReady||!db) return;
+  if (player.getPlayerState && player.getPlayerState()===YT.PlayerState.PLAYING)
+    db.ref('rooms/'+roomCode+'/currentTime').set(player.getCurrentTime());
+}, 4000);
+
+function ytLoad(vid) {
+  if (!player||!playerReady) return;
+  player.loadVideoById(vid);
+  player.pauseVideo();
+  document.getElementById('vid-ph').style.display = 'none';
+}
+
+function loadVideo() {
+  if (!isHost && !isDemo) { toast('Chỉ host mới có thể đổi video!'); return; }
+  const url = document.getElementById('url-inp').value.trim();
+  const vid = ytId(url);
+  if (!vid) { toast('❌ Không nhận được link YouTube!'); return; }
+  currentVid = vid;
+  ytLoad(vid);
+  if (db) db.ref('rooms/'+roomCode).update({ videoId:vid, playing:false, currentTime:0, updatedAt:Date.now() });
+  sysMsg('Host đã thay đổi video');
+}
+
+function ytId(url) {
+  for (const p of [/[?&]v=([a-zA-Z0-9_-]{11})/,/youtu\.be\/([a-zA-Z0-9_-]{11})/,/embed\/([a-zA-Z0-9_-]{11})/,/^([a-zA-Z0-9_-]{11})$/]) {
+    const m = url.match(p); if (m) return m[1];
+  }
+  return null;
+}
+
+/* ── CHAT ── */
+function sendChat() {
+  const el = document.getElementById('chat-inp');
+  const text = el.value.trim(); if (!text) return;
+  if (db) db.ref('chats/'+roomCode).push({ sender:userName, text, ts:Date.now() });
+  else addMsg(userName, text, false, true);
+  el.value = '';
+}
+
+function addMsg(sender, text, sys=false, me=false) {
+  const c = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = 'm' + (sys?' sys': me?' me':'');
+  d.innerHTML = sys
+    ? `<div class="m-txt">— ${esc(text)} —</div>`
+    : `<div class="m-who">${esc(sender)}</div><div class="m-txt">${esc(text)}</div>`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+
+function sysMsg(t) { addMsg('',t,true); }
+
+/* ── REACTIONS ── */
+function sendRxn(emoji) {
+  if (db) db.ref('rxns/'+roomCode).push({ emoji, sender:userName, ts:Date.now() });
+  else spawnRxn(emoji);
+}
+
+function spawnRxn(emoji) {
+  const c = document.getElementById('rxn-canvas');
+  const el = document.createElement('div');
+  el.className = 'fr'; el.textContent = emoji;
+  el.style.left = (8 + Math.random()*60)+'px';
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3400);
+}
+
+/* ── UTILS ── */
+function copyInvite() {
+  const url = location.origin + location.pathname + '?room=' + roomCode;
+  navigator.clipboard.writeText(url)
+    .then(() => toast('📋 Đã copy link mời!'))
+    .catch(() => toast('Link: '+url));
+}
+
+function showSync() {
+  const b = document.getElementById('sync-banner');
+  b.classList.add('on');
+  setTimeout(() => b.classList.remove('on'), 1800);
+}
+
+let toastTmr;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTmr);
+  toastTmr = setTimeout(() => t.classList.remove('on'), 2800);
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
