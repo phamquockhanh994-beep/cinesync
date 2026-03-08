@@ -8,14 +8,7 @@
 <meta name="theme-color" content="#07070f">
 <title>CineSync</title>
 
-<!-- ── TYPOGRAPHY ──────────────────────────────────────
-  Be Vietnam Pro : hỗ trợ đầy đủ tiếng Việt + Latin Extended
-                   dùng cho cả heading lẫn body UI
-  Subset=vietnamese được Google Fonts tối ưu sẵn
-─────────────────────────────────────────────────────── -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&subset=vietnamese&display=swap" rel="stylesheet">
+<!-- ── TYPOGRAPHY: SF Pro (iOS/macOS) · Roboto (Android) · Segoe UI (Windows) — zero network load ── -->
 
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
@@ -64,12 +57,12 @@ html,body{height:100%;overflow:hidden;}
 body{
   background:#07070f;
   color:var(--t1);
-  font-family:'Be Vietnam Pro',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   font-size:14px;line-height:1.5;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   overscroll-behavior:none;touch-action:manipulation;
 }
-h1,h2,h3,.display{font-family:'Be Vietnam Pro',ui-sans-serif,system-ui,-apple-system,sans-serif;}
+h1,h2,h3,.display{font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;}
 
 /* ── AURORA ── */
 .aurora{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
@@ -124,7 +117,7 @@ h1,h2,h3,.display{font-family:'Be Vietnam Pro',ui-sans-serif,system-ui,-apple-sy
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:7px;
   border:none;border-radius:var(--sm);
-  font-family:'Be Vietnam Pro',system-ui,sans-serif;font-weight:600;font-size:14px;
+  font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-weight:600;font-size:14px;
   cursor:pointer;white-space:nowrap;user-select:none;-webkit-user-select:none;
   min-height:44px;padding:0 18px;position:relative;overflow:hidden;
   transition:filter .16s,transform .12s,box-shadow .16s;
@@ -179,7 +172,7 @@ h1,h2,h3,.display{font-family:'Be Vietnam Pro',ui-sans-serif,system-ui,-apple-sy
   background:rgba(255,255,255,.07);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   border:1.5px solid rgba(255,255,255,.13);border-radius:var(--sm);
   padding:13px 15px;color:var(--t1);
-  font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:15px;
+  font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:15px;
   outline:none;-webkit-appearance:none;transition:all .18s;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
 }
@@ -203,7 +196,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
   background:rgba(15,15,25,.92);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);
   border:1px solid rgba(255,255,255,.15);border-top-color:rgba(255,255,255,.24);
   border-radius:14px;padding:10px 20px;
-  font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:13px;font-weight:500;color:var(--t1);
+  font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:13px;font-weight:500;color:var(--t1);
   opacity:0;pointer-events:none;
   transition:all .28s cubic-bezier(.34,1.4,.64,1);
   z-index:99999;white-space:nowrap;
@@ -228,7 +221,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
 .seg{display:flex;background:rgba(0,0,0,.30);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   border:1px solid rgba(255,255,255,.10);border-radius:var(--sm);padding:3px;gap:3px;margin-bottom:24px;}
 .sb{flex:1;padding:9px;border:none;background:transparent;color:var(--t2);
-  font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:13px;font-weight:600;
+  font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:13px;font-weight:600;
   border-radius:10px;cursor:pointer;transition:all .2s;}
 .sb.on{background:linear-gradient(148deg,rgba(255,255,255,.15),rgba(255,255,255,.07));color:var(--t1);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 2px 10px rgba(0,0,0,.3);
@@ -261,7 +254,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
 }
 @keyframes mIn{from{opacity:0;transform:scale(.91) translateY(10px)}to{opacity:1;transform:none}}
 .mhd{padding:16px 18px 12px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:9px;}
-.mhd h3{font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16px;font-weight:700;}
+.mhd h3{font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:16px;font-weight:700;}
 .mbody{padding:18px 18px 22px;}
 .mbody p{font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:14px;}
 .codebox{background:rgba(0,0,0,.38);border:1px solid rgba(255,255,255,.10);border-radius:var(--xs);
@@ -301,7 +294,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
 }
 .logomark::after{content:'';position:absolute;inset:0;
   background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.25),transparent 60%);}
-.lbrand h1{font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:34px;font-weight:800;letter-spacing:-.6px;
+.lbrand h1{font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:34px;font-weight:800;letter-spacing:-.6px;
   background:linear-gradient(138deg,rgba(255,255,255,.96),rgba(255,255,255,.52));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;}
 .lbrand p{font-size:15px;color:var(--t2);line-height:1.75;margin-bottom:32px;}
@@ -316,7 +309,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
 
 /* Form */
 .lform{width:340px;padding:36px 32px 40px;display:flex;flex-direction:column;}
-.lform h2{font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:21px;font-weight:800;letter-spacing:-.4px;margin-bottom:5px;}
+.lform h2{font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:21px;font-weight:800;letter-spacing:-.4px;margin-bottom:5px;}
 .lform .sub{font-size:13px;color:var(--t2);margin-bottom:26px;}
 .fg{margin-bottom:16px;}
 
@@ -354,7 +347,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
 
 /* Subtitle overlay via <track> — style cues */
 ::cue{
-  font-family:'Be Vietnam Pro',system-ui,sans-serif;
+  font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;
   font-size:1.4em;font-weight:500;
   background:rgba(0,0,0,.72);color:#fff;
   border-radius:4px;padding:2px 6px;
@@ -399,7 +392,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
 .urlbar:focus-within{border-color:rgba(245,158,11,.52);background:rgba(255,255,255,.10);
   box-shadow:0 0 0 3px rgba(245,158,11,.13),inset 0 1px 0 rgba(255,255,255,.08);}
 .urlbar input{flex:1;background:transparent;border:none;color:var(--t1);
-  font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:13px;outline:none;padding:11px 0;
+  font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:13px;outline:none;padding:11px 0;
   -webkit-appearance:none;}
 .urlbar input::placeholder{color:var(--t3);}
 .tbd{width:1px;height:22px;background:rgba(255,255,255,.09);flex-shrink:0;}
@@ -447,7 +440,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
   padding-bottom:calc(8px + var(--sab));border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;}
 .cinput{flex:1;background:rgba(255,255,255,.08);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   border:1.5px solid rgba(255,255,255,.11);border-radius:22px;
-  padding:10px 16px;color:var(--t1);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:14px;
+  padding:10px 16px;color:var(--t1);font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:14px;
   outline:none;-webkit-appearance:none;transition:all .16s;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.06);}
 .cinput:focus{border-color:rgba(245,158,11,.52);background:rgba(255,255,255,.11);}
@@ -502,7 +495,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
     backdrop-filter:var(--g2);-webkit-backdrop-filter:var(--g2);
     border-left:1px solid rgba(255,255,255,.09);box-shadow:inset 1px 0 0 rgba(255,255,255,.07);}
   #shd{padding:12px 14px 8px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:8px;flex-shrink:0;}
-  #shd strong{font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:13px;font-weight:700;}
+  #shd strong{font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:13px;font-weight:700;}
   #mob-top,#mob-bot,#csheet,#mob-gn{display:none!important;}
 }
 
@@ -528,7 +521,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
     background:rgba(10,10,22,.78);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
     border-top:1px solid rgba(255,255,255,.08);}
   #shd{padding:10px 14px 8px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:8px;flex-shrink:0;}
-  #shd strong{font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:13px;font-weight:700;}
+  #shd strong{font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:13px;font-weight:700;}
   #mob-top,#mob-bot,#csheet,#mob-gn{display:none!important;}
 }
 
@@ -544,7 +537,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
     backdrop-filter:var(--g2);-webkit-backdrop-filter:var(--g2);
     border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.16);}
-  .appnm{font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:18px;font-weight:800;letter-spacing:-.3px;
+  .appnm{font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:18px;font-weight:800;letter-spacing:-.3px;
     background:linear-gradient(135deg,var(--a),var(--a2));
     -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
   #mob-tr{margin-left:auto;display:flex;align-items:center;gap:8px;}
@@ -569,7 +562,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
     box-shadow:inset 0 1px 0 rgba(255,255,255,.13);}
   .mtab{display:flex;flex-direction:column;align-items:center;gap:4px;
     padding:6px 10px;border:none;background:transparent;
-    color:var(--t3);font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:10px;font-weight:600;
+    color:var(--t3);font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:10px;font-weight:600;
     border-radius:var(--xs);cursor:pointer;transition:color .15s;flex:1;
     -webkit-tap-highlight-color:transparent;}
   .mtab.on{color:var(--a);}
@@ -596,7 +589,7 @@ label.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.7px;text-
   .shand-wrap{padding:10px 0 6px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;}
   .shand{width:38px;height:4px;background:rgba(255,255,255,.22);border-radius:2px;}
   .shd2{display:flex;align-items:center;gap:8px;padding:0 16px 10px;flex-shrink:0;}
-  .shd2 strong{font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:16px;font-weight:800;}
+  .shd2 strong{font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;font-size:16px;font-weight:800;}
   .sclose{margin-left:auto;width:28px;height:28px;border-radius:50%;
     background:rgba(255,255,255,.08);border:none;color:var(--t2);
     display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;}
